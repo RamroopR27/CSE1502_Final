@@ -1,0 +1,212 @@
+﻿#include <iostream>
+#include <vector>
+#include <cstdlib>
+#include <ctime>
+#include <limits>
+
+
+using namespace std;
+
+
+// Function prototype list
+void displayGrid(const vector<char>& grid);
+bool isValidMove(const vector<char>& grid, int move);
+void playerMove(vector<char>& grid);
+void opponentMove(vector<char>& grid);
+bool checkWin(const vector<char>& grid, char symbol);
+bool checkTie(const vector<char>& grid);
+void resetGrid(vector<char>& grid);
+void clearInput();
+
+
+
+
+int main() {
+    // Tic-Tac-Toe grid with 9 cells
+    vector<char> grid(9); 
+    int wins = 0, losses = 0, ties = 0;
+    char playAgain;
+
+
+    // Initialize grid labels 1-9
+    for (int i = 0; i < 9; ++i) {
+        grid[i] = '1' + i;
+    }
+
+
+    // Seed random number generator for opponent move
+    srand(static_cast<unsigned int>(time(nullptr))); 
+
+
+    do {
+        resetGrid(grid);
+        bool gameOver = false;
+
+
+        while (!gameOver) {
+            displayGrid(grid);
+            playerMove(grid);
+
+
+            if (checkWin(grid, 'X')) {
+                displayGrid(grid);
+                cout << "You win!\n";
+                wins++;
+                gameOver = true;
+                break;
+            }
+
+
+            if (checkTie(grid)) {
+                displayGrid(grid);
+                cout << "It's a tie!\n";
+                ties++;
+                gameOver = true;
+                break;
+            }
+
+
+            opponentMove(grid);
+
+
+            if (checkWin(grid, 'O')) {
+                displayGrid(grid);
+                cout << "Opponent wins!\n";
+                losses++;
+                gameOver = true;
+                break;
+            }
+
+
+            if (checkTie(grid)) {
+                displayGrid(grid);
+                cout << "It's a tie!\n";
+                ties++;
+                gameOver = true;
+                break;
+            }
+        }
+
+
+        // Ask if the user wants to play again
+        cout << "Play again? (y/n): ";
+        cin >> playAgain;
+
+
+        while (playAgain != 'y' && playAgain != 'n') {
+            cout << "Please enter 'y' or 'n': ";
+            cin >> playAgain;
+        }
+
+
+    } while (playAgain == 'y');
+
+
+    // Display final score after user ends program
+    cout << "\nFinal Score:\n";
+    cout << "Wins: " << wins << "\n";
+    cout << "Losses: " << losses << "\n";
+    cout << "Ties: " << ties << "\n";
+
+
+    return 0;
+}
+
+
+// Prototype definitions
+
+
+// Display the current Tic-Tac-Toe grid
+void displayGrid(const vector<char>& grid) {
+    cout << "\n";
+    for (int i = 0; i < 9; i++) {
+        cout << " " << grid[i] << " ";
+        if ((i + 1) % 3 == 0) {
+            cout << "\n";
+            if (i != 8) cout << "---|---|---\n";
+        } else {
+            cout << "|";
+        }
+    }
+    cout << "\n";
+}
+
+
+// Validate user move
+bool isValidMove(const vector<char>& grid, int move) {
+    return move >= 1 && move <= 9 && grid[move - 1] != 'X' && grid[move - 1] != 'O';
+}
+
+
+// Player move logic
+void playerMove(vector<char>& grid) {
+    int move;
+    cout << "Enter your move (1-9): ";
+    while (true) {
+        cin >> move;
+        if (cin.fail()) {
+            clearInput();
+            cout << "Invalid input. Enter a number between 1 and 9: ";
+        } else if (!isValidMove(grid, move)) {
+            cout << "Invalid move. Try another box: ";
+        } else {
+            break;
+        }
+    }
+    grid[move - 1] = 'X'; // Mark the user's move with 'X'
+}
+
+
+// Opponent move logic
+void opponentMove(vector<char>& grid) {
+    int move;
+    do {
+        move = rand() % 9; // Random move 0-8
+    } while (grid[move] == 'X' || grid[move] == 'O');
+    grid[move] = 'O'; // Mark the opponent's move with 'O'
+    cout << "Opponent chose position " << (move + 1) << "\n";
+}
+
+
+// Check for win condition with set rows, columns, and diagonals
+bool checkWin(const vector<char>& grid, char symbol) {
+    const int winPatterns[8][3] = {
+        {0, 1, 2}, {3, 4, 5}, {6, 7, 8}, 
+        {0, 3, 6}, {1, 4, 7}, {2, 5, 8}, 
+        {0, 4, 8}, {2, 4, 6}             
+    };
+    for (const auto& pattern : winPatterns) {
+        if (grid[pattern[0]] == symbol &&
+            grid[pattern[1]] == symbol &&
+            grid[pattern[2]] == symbol) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+// Check for tie condition
+bool checkTie(const vector<char>& grid) {
+    for (char c : grid) {
+        if (c != 'X' && c != 'O') {
+            return false;
+        }
+    }
+    return true;
+}
+
+
+// Reset grid to initial state
+void resetGrid(vector<char>& grid) {
+    for (int i = 0; i < 9; ++i) {
+        grid[i] = '1' + i;
+    }
+}
+
+
+// Clear invalid input from cin
+void clearInput() {
+    cin.clear();
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+}
